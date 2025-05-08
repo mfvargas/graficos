@@ -50,6 +50,7 @@ Este documento contiene visualizaciones de datos socioeconómicos de países y t
 #| label: relacion-pib-ev
 #| warning: false
 #| message: false
+#| code-fold: true
 
 # Gráfico de dispersión de PIB per cápita vs esperanza de vida al nacer
 
@@ -78,3 +79,111 @@ migrafico <-
 ggplotly(migrafico, tootip = "text") |> 
   config(locale = 'es')
 ```
+
+# Distribución del PIB per cápita
+
+```{r}
+#| label: distribucion-pip-per-capita
+#| warning: false
+#| message: false
+#| code-fold: true
+
+migrafico <-
+paises |>
+  ggplot(aes(x = GDP_PC)) +
+  geom_histogram(
+    aes(
+      text = paste0(
+        "PIB per cápita (valor medio del rango): $", round(after_stat(x), 2), "\n",
+        "Frecuencia: ", after_stat(count)
+      )
+    ), 
+    bins = 10
+  ) +
+  scale_x_continuous(labels = comma, limits = c(0, NA)) +
+  coord_cartesian(ylim = c(0, 40)) +
+  ggtitle("Distribución del PIB per cápita") +
+  xlab("PIB per cápita ($ EE.UU.)") +
+  ylab("Frecuencia") +
+  labs(subtitle = "Datos de 201 países", caption = "Fuentes: Natural Earth y Banco Mundial") +
+  theme_economist()
+
+ggplotly(migrafico, tooltip = "text") |> config(locale = "es")
+```
+
+# Distribucón de la población por regiones de la ONU
+
+```{r}
+#| label: distribucion-poblacion-onu
+#| warning: false
+#| message: false
+#| code-fold: true
+
+# Agrupar y resumir los datos
+suma_poblacion_por_region <- paises |>
+  group_by(REGION_UN) |>
+  summarise(POP_TOTAL = sum(POP_EST))
+
+
+# Calcular porcentajes
+porcentaje_poblacion_por_region <- suma_poblacion_por_region |>
+  mutate(POP_PCT = round(POP_TOTAL / sum(POP_TOTAL) * 100, 1))
+
+# Gráfico de pastel
+grafico_pastel_ggplot2 <-
+  ggplot(porcentaje_poblacion_por_region, aes(x = "", y = POP_TOTAL, fill = REGION_UN)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  geom_text(
+    aes(label = paste0(POP_PCT, "%")), 
+    position = position_stack(vjust = 0.6) # para ajustar la posición del texto en cada porción
+  ) +
+  labs(title = "Distribución de la población por región de la ONU",
+       x = NULL,
+       y = NULL,
+       fill = "Región de la ONU") +
+  theme_void()
+
+grafico_pastel_ggplot2
+```
+
+
+# Cantidad de países por región de la ONU
+
+```{r}
+#| label: cantidad-paises-regiones-onu
+#| warning: false
+#| message: false
+#| code-fold: true
+
+# Gráfico de barras con conteo de países por región de la ONU
+grafico_barras_ggplot2 <-
+paises |>
+  ggplot(aes(x = fct_infreq(REGION_UN))) +
+  geom_bar(
+    aes(
+      text = paste0(
+        "Cantidad de países: ", after_stat(count)
+      )
+    )    
+  ) +
+  ggtitle("Cantidad de países por región de la ONU") +
+  xlab("Región de la ONU") +
+  ylab("Cantidad de países") +
+  labs(caption = "Fuente: Natural Earth") +
+  theme_economist()
+
+# Gráfico de barras plotly
+ggplotly(grafico_barras_ggplot2, tooltip = "text") |> 
+  config(locale = 'es')
+```
+
+
+
+
+
+
+
+
+
+
