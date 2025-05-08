@@ -22,6 +22,8 @@ library(scales)
 library(ggthemes)
 
 library(hrbrthemes)
+
+library(plotly)
 ```
 
 
@@ -51,17 +53,28 @@ Este documento contiene visualizaciones de datos socioeconómicos de países y t
 
 # Gráfico de dispersión de PIB per cápita vs esperanza de vida al nacer
 
-paises |>
-  ggplot(aes(x = GDP_PC, y = LIFE_EXPECTANCY, color = CONTINENT)) +
-  geom_point() +
-  scale_x_continuous(labels = comma, limits = c(0, NA)) +
-  ggtitle("PIB per cápita vs esperanza de vida al nacer") +
-  xlab("PIB per cápita (USD)") +
-  ylab("Esperanza de vida al nacer (años)") +
-  labs(
-    color = "Continente",
-    subtitle = "Datos de todo el mundo",
-    caption = "Fuentes: Natural Earth y Banco Mundial"
-  ) +
-  theme_ipsum()
+migrafico <-
+  paises |>
+    ggplot(aes(x = GDP_PC, y = LIFE_EXPECTANCY, color = CONTINENT)) +
+    geom_point(aes(
+    # datos que se muestran al colocar el ratón sobre un punto
+    text = paste0(
+      "PIB per cápita: ", GDP_PC, "\n",
+      "Esperanza de vida: ", LIFE_EXPECTANCY, "\n",
+      "País: ", NAME
+    )
+    )) +
+    scale_x_continuous(labels = comma, limits = c(0, NA)) +
+    ggtitle("PIB per cápita vs esperanza de vida al nacer") +
+    xlab("PIB per cápita (USD)") +
+    ylab("Esperanza de vida al nacer (años)") +
+    labs(
+      color = "Continente",
+      subtitle = "Datos de todo el mundo",
+      caption = "Fuentes: Natural Earth y Banco Mundial"
+    ) +
+    theme_ipsum()
+
+ggplotly(migrafico, tootip = "text") |> 
+  config(locale = 'es')
 ```
